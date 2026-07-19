@@ -1,0 +1,27 @@
+{
+    "name": "laikait/laika-auth",
+    "description": "Multi-guard authentication package for the Laika PHP MVC Framework with OAuth support",
+    "type": "library",
+    "license": "MIT",
+    "keywords": ["laika", "auth", "authentication", "oauth", "php"],
+    "authors": [
+        {
+            "name": "Showket Ahmed",
+            "email": "riyadhtayf@gmail.com"
+        }
+    ],
+    "require": {
+        "php": ">=8.1",
+        "ext-curl": "*"
+    },
+    "autoload": {
+        "files": [
+            "helpers/loader.php"
+        ],
+        "psr-4": {
+            "Laika\\Auth\\": "src/"
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}
