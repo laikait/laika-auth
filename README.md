@@ -20,7 +20,7 @@ Run the migration in `database/migrations` to create the `auth_tokens` and `oaut
 
 ## Configuration
 
-Publish and edit `config/auth.php` to set guards and OAuth credentials.
+Publish and edit `lf-config/auth.php` to set guards and OAuth credentials.
 
 ```php
 'guards' => [
