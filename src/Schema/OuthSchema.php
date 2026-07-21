@@ -22,11 +22,15 @@ use Laika\Core\Abstracts\SchemaAbstract;
 
 class OuthSchema extends SchemaAbstract
 {
+    /** @var string Database Table Name */
     protected string $table = 'oauth_accounts';
+
+    /** @var string Database Connection Name */
+    protected string $connection = 'default';
 
     public function up(): void
     {
-        Schema::on()->createIfNotExists($this->table, function (Blueprint $t) {
+        Schema::on($this->connection)->createIfNotExists($this->table, function (Blueprint $t) {
             $t->bigId();
             $t->bigInteger('user_id')->unsigned();
             $t->string('provider', 30);

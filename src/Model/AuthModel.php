@@ -21,4 +21,7 @@ class AuthModel extends Model
 
     /** @var string Primary Column Name */
     protected string $id = 'id';
+
+    /** @var string Database Connection Name */
+    protected string $connection = 'default';
 }
