@@ -12,5 +12,8 @@ declare(strict_types=1);
 
 use Laika\Core\App\Resource;
 
-Resource::register('models', repo_dir('laikait/laika-auth'), "Laika\\Auth\\Model");
-Resource::register('schemas', repo_dir('laikait/laika-auth', "Laika\\Auth\\Schema"));
+// Register Model Class
+Resource::register('models', __DIR__ . '/../src/Model', '\\Laika\\Auth\\Model');
+
+// Register Schema Class
+Resource::register('schemas', __DIR__ . '/../src/Schema', '\\Laika\\Auth\\Schema');
