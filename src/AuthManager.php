@@ -27,9 +27,9 @@ class AuthManager
     /** @var array Resolved Guard */
     protected array $resolved = [];
 
-    public function __construct(array $config)
+    public function __construct(?array $config = null)
     {
-        $this->config = $config;
+        $this->config = $config ?? config('auth');
     }
 
     /**
@@ -49,7 +49,7 @@ class AuthManager
         $guard = match ($conf['driver']) {
             'session'   =>  new SessionGuard($conf['provider'] ?? null, $name),
             'cookie'    =>  new CookieGuard($conf['provider'] ?? null, $name),
-            'token'     =>  new TokenGuard($name),
+            'token'     =>  new TokenGuard($conf['provider'], $name),
             default     =>  throw new \InvalidArgumentException("Unknown auth driver [{$conf['driver']}]."),
         };
 

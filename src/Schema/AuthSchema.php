@@ -38,9 +38,9 @@ class AuthSchema extends SchemaAbstract
             $t->string('ip', 50)->nullable();
             $t->string('user_agent', 50)->nullable();
             $t->string('token');
-            $t->string('refresh_token')->default(NULL);
-            $t->timestamp('expires_at')->default(NULL);
-            $t->timestamp('revoked_at')->default(NULL);
+            $t->string('refresh_token')->nullable()->default(null);
+            $t->timestamp('expires_at')->nullable()->default(null);
+            $t->timestamp('revoked_at')->nullable()->default(null);
             $t->timestamp('created_at');
             
             // Indexes
