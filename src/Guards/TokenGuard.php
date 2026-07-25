@@ -74,20 +74,22 @@ class TokenGuard
      * Validate Token
      * @param ?int $ttl Default is 3600 (1 Hour)
      * @param ?string $token
+     * @param bool $strict Default is false
      * @return ?array
      */
-    public function validateToken(?string $token, ?int $ttl = null): ?array
+    public function validateToken(?string $token, ?int $ttl = null, bool $strict = false): ?array
     {
         if (empty($token)) return null;
         $hashed = hash('sha256', $token);
         $row = $this->model
-                    ->select(['expires_at', 'user_id'])
+                    ->select(['expires_at', 'user_id', 'browser', 'ip', 'user_agent'])
                     ->where(['token' => $hashed, 'guard' => $this->guardName])
                     ->isNull('revoked_at')
                     ->first();
 
-        // CHeck Has Row
+        // Check Has Row
         if (empty($row)) return null;
+
         // Check Not Expired
         if ($row['expires_at']) {
             if (strtotime($row['expires_at']) < time()) return null;
@@ -95,6 +97,18 @@ class TokenGuard
             $this->model
                 ->where(['token' => $hashed, 'guard' => $this->guardName])
                 ->update(['expires_at' => date('Y-m-d H:i:s', time() + $ttl)]);
+        }
+
+        // Validate Visitor Info
+        if ($strict) {
+            // Validate Browser
+            if ($row['browser'] != Visitor::browser()) return null;
+
+            // Validate Browser
+            if ($row['user_agent'] != Visitor::userAgent()) return null;
+
+            // Validate Browser
+            if ($row['ip'] != Visitor::ip()) return null;
         }
 
         $user = $this->provider->find($row['user_id']);
