@@ -24,14 +24,14 @@ Publish and edit `lf-config/auth.php` to set guards and OAuth credentials.
 
 ```php
 'guards' => [
-    'web' => ['driver' => 'session', 'provider' => 'users'],
-    'api' => ['driver' => 'token'],
+    'web'   =>  ['driver' => 'session', 'provider' => 'users'],
+    'user'  =>  ['driver' => 'token', 'provider' => '\\App\\Model\\UsersModel::class'],
 ],
 'oauth' => [
     'google' => [
         'client_id' => 'GOOGLE_CLIENT_ID',
         'client_secret' => 'GOOGLE_CLIENT_SECRET',
-        'user_model' => '\\App\\Models\\User::class',
+        'user_model' => '\\App\\Model\\UsersModel::class',
     ],
 ],
 ```
