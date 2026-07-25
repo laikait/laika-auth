@@ -39,11 +39,9 @@ class AuthManager
      */
     public function guard(string $name): SessionGuard|CookieGuard|TokenGuard
     {
-        if (isset($this->resolved[$name])) {
-            return $this->resolved[$name];
-        }
+        if (isset($this->resolved[$name])) return $this->resolved[$name];
 
-        $conf = $this->config['guards'][$name]
+        $conf = $this->config[$name]
             ?? throw new \InvalidArgumentException("Guard [$name] not configured.");
 
         $guard = match ($conf['driver']) {
@@ -54,26 +52,5 @@ class AuthManager
         };
 
         return $this->resolved[$name] = $guard;
-    }
-
-    /**
-     * Outh Guard
-     * @param string $provider
-     * @return OauthGuard
-     */
-    public function oauth(string $provider): OauthGuard
-    {
-        $conf = $this->config['oauth'][$provider]
-            ?? throw new \InvalidArgumentException("OAuth provider [$provider] not configured.");
-
-        $providerInstance = match ($provider) {
-            'google' => new GoogleOauthProvider($conf['client_id'], $conf['client_secret']),
-            'facebook' => new FacebookOauthProvider($conf['client_id'], $conf['client_secret']),
-            default => throw new \InvalidArgumentException("Unsupported provider [$provider]."),
-        };
-
-        $tokenGuard = new TokenGuard("{$provider}_oauth");
-
-        return new OauthGuard($providerInstance, $tokenGuard, $conf['user_model']);
     }
 }

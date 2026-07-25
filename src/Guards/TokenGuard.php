@@ -15,6 +15,7 @@ namespace Laika\Auth\Guards;
 use Laika\Model\Model;
 use Laika\Service\Visitor;
 use Laika\Auth\Model\AuthModel;
+use Laika\Auth\Exceptions\AuthException;
 
 class TokenGuard
 {
@@ -29,7 +30,7 @@ class TokenGuard
 
     public function __construct(string $provider, string $guardName)
     {
-        $this->guardName = $guardName;
+        $this->guardName = strtolower($guardName);
         $this->provider = new $provider();
         $this->model = new AuthModel();
     }
@@ -39,6 +40,7 @@ class TokenGuard
      * @param int $userId
      * @param ?int $ttl
      * @return array
+     * @throws AuthException
      */
     public function issueToken(int $userId, ?int $ttl = null): array
     {
@@ -57,20 +59,27 @@ class TokenGuard
             'created_at' => date('Y-m-d H:i:s')
         ];
 
-        $this->model->insert($row);
+        try {
+            $this->model->transaction(function (AuthModel $m) use ($row) {
+                $m->insert($row);
+            });
+        } catch (\Throwable $th) {
+            throw new AuthException("Auth token issue failed!", 500, $th);
+        }
         return ['token' => $token, 'hashed' => $hashed];
     }
 
 
     /**
-     * Validate Tiken
-     * @param string $plainToken
+     * Validate Token
      * @param ?int $ttl Default is 3600 (1 Hour)
+     * @param ?string $token
      * @return ?array
      */
-    public function validateToken(string $plainToken, ?int $ttl = null): ?array
+    public function validateToken(?string $token, ?int $ttl = null): ?array
     {
-        $hashed = hash('sha256', $plainToken);
+        if (empty($token)) return null;
+        $hashed = hash('sha256', $token);
         $row = $this->model
                     ->select(['expires_at', 'user_id'])
                     ->where(['token' => $hashed, 'guard' => $this->guardName])
@@ -87,7 +96,7 @@ class TokenGuard
                 ->where(['token' => $hashed, 'guard' => $this->guardName])
                 ->update(['expires_at' => date('Y-m-d H:i:s', time() + $ttl)]);
         }
-        
+
         $user = $this->provider->find($row['user_id']);
 
         // Check Has User
