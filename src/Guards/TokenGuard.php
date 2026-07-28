@@ -44,7 +44,7 @@ class TokenGuard
      */
     public function issueToken(int $userId, ?int $ttl = null): array
     {
-        $token = bin2hex(random_bytes(64));
+        $token = $this->generateToken();
         $hashed = hash('sha256', $token);
         $row = [
             'user_id' => $userId,
@@ -64,7 +64,7 @@ class TokenGuard
                 $m->insert($row);
             });
         } catch (\Throwable $th) {
-            throw new AuthException("Auth token issue failed!", 500, $th);
+            throw $th;
         }
         return ['token' => $token, 'hashed' => $hashed];
     }
@@ -140,5 +140,24 @@ class TokenGuard
         return (bool) $this->model
                             ->where(['user_id' => $userId, 'guard' => $this->guardName])
                             ->update(['revoked_at' => date('Y-m-d H:i:s')]);
+    }
+
+    ############################################################################
+    /*============================= INTERNAL API =============================*/
+    ############################################################################
+    /**
+     * Generate Token
+     * @param ?int $byte
+     * @return string
+     */
+    private function generateToken(?int $byte): string
+    {
+        $byte = $byte ?: 24;
+        $token = bin2hex(random_bytes($byte));
+
+        if ($this->model->select('id')->where(['token' => hash('sha256', $token), 'guard' => $this->guardName])->count() > 0) {
+            return $this->generateToken($byte);
+        }
+        return $token;
     }
 }
