@@ -32,7 +32,7 @@ class AuthSchema extends SchemaAbstract
     {
         Schema::on($this->connection)->createIfNotExists($this->table, function (Blueprint $t) {
             $t->bigId();
-            $t->bigInteger('user_id')->unsigned()->default(null);
+            $t->bigInteger('user_id')->unsigned();
             $t->string('guard', 50);
             $t->string('browser', 50)->nullable()->default(null);
             $t->string('ip', 50)->nullable()->default(null);
