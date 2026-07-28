@@ -55,8 +55,6 @@ class TokenGuard
             'token' => $hashed,
             'refresh_token' => bin2hex(random_bytes(64)),
             'expires_at' => $ttl ? date('Y-m-d H:i:s', time() + $ttl) : null,
-            'revoked_at' => null,
-            'created_at' => date('Y-m-d H:i:s')
         ];
 
         try {
