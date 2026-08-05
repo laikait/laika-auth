@@ -34,9 +34,9 @@ class AuthSchema extends SchemaAbstract
             $t->bigId();
             $t->bigInteger('user_id')->unsigned();
             $t->string('guard', 50);
-            $t->string('browser', 50)->nullable();
-            $t->string('ip', 50)->nullable();
-            $t->string('user_agent', 50)->nullable();
+            $t->string('browser', 50)->nullable()->default(null);
+            $t->string('ip', 50)->nullable()->default(null);
+            $t->string('user_agent', 50)->nullable()->default(null);
             $t->string('token');
             $t->string('refresh_token')->nullable()->default(null);
             $t->timestamp('expires_at')->nullable()->default(null);
