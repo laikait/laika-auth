@@ -20,7 +20,7 @@ Run the migration in `database/migrations` to create the `auth_tokens` and `oaut
 
 ## Configuration
 
-Publish and edit `lf-config/auth.php` to set guards and OAuth credentials.
+Set guards via `AUTH_*` environment variables (see the framework's Configuration docs), or pass your own `$config` array to `new AuthManager($config)` for anything beyond the framework's fixed `web`/`remember`/`admin`/`user` set. OAuth credentials are configured separately — see below.
 
 ```php
 'guards' => [
