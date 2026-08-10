@@ -1,0 +1,82 @@
+name: Laika Auth PHP Compatibility
+
+on:
+  push:
+    branches:
+      - beta
+
+  pull_request:
+    branches:
+      - main
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ########################################################
+  # PHP 8.1 - 8.5 COMPATIBILITY
+  ########################################################
+  php-compatibility:
+    name: Validate PHP ${{ matrix.php-version }}
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        php-version: ['8.1', '8.2', '8.3', '8.4', '8.5']
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+
+      - name: Get Composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir || echo ~/.composer/cache)" >> $GITHUB_OUTPUT
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
+        with:
+          # Only Composer's download cache. Caching "vendor" too would pin the
+          # resolved dependency versions across runs, and this repo ships no
+          # composer.lock, so a restored vendor/ silently overrides resolution.
+          path: ${{ steps.composer-cache.outputs.dir }}
+          # Keyed on composer.json: with no composer.lock in this repo,
+          # hashFiles('**/composer.lock') is an empty string and the key never
+          # changes.
+          key: ${{ runner.os }}-composer-v2-${{ hashFiles('**/composer.json') }}
+          restore-keys: ${{ runner.os }}-composer-v2-
+
+      - name: Setup PHP ${{ matrix.php-version }}
+        uses: shivammathur/setup-php@accd6127cb78bee3e8082180cb391013d204ef9f # v2
+        with:
+          php-version: ${{ matrix.php-version }}
+          extensions: curl, mbstring, json
+          coverage: none
+          tools: composer
+
+      - name: Validate composer.json
+        run: composer validate --strict
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress
+
+      # Parses every file with the matrix version's own parser. This is the
+      # check that cannot be wrong: if a construct is not valid on this PHP,
+      # it fails here regardless of what any static analyser knows.
+      - name: Syntax check on PHP ${{ matrix.php-version }}
+        run: find src -name '*.php' -print0 | xargs -0 -n1 -- php -l
+
+      # Catches the things a parser cannot: functions removed or deprecated in
+      # a later version, signatures that changed, behaviour flagged for removal.
+      - name: PHPCompatibility check (8.1-8.5)
+        run: vendor/bin/phpcs --standard=phpcs.xml --report=full
+
+      - name: Report result
+        if: success()
+        run: echo "### PHP ${{ matrix.php-version }} ✅ compatible" >> $GITHUB_STEP_SUMMARY
+
+      - name: Report result (failed)
+        if: failure()
+        run: echo "### PHP ${{ matrix.php-version }} ❌ failed" >> $GITHUB_STEP_SUMMARY
