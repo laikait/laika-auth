@@ -42,8 +42,15 @@
     "extra": {
         "laika": {
             "resources": {
-                "models": { "path": "src/Model", "namespace": "Laika\\Auth\\Model" },
-                "schemas": { "path": "src/Schema", "namespace": "Laika\\Auth\\Schema" }
+                "models": {
+                    "path": "src/Model",
+                    "namespace": "Laika\\Auth\\Model"
+                },
+                "schemas": {
+                    "path": "src/Schema",
+                    "namespace": "Laika\\Auth\\Schema",
+                    "contract": "Laika\\Core\\Abstracts\\SchemaAbstract"
+                }
             }
         }
     }
