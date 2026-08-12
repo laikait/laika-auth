@@ -15,9 +15,6 @@ namespace Laika\Auth;
 use Laika\Auth\Guards\SessionGuard;
 use Laika\Auth\Guards\CookieGuard;
 use Laika\Auth\Guards\TokenGuard;
-use Laika\Auth\Guards\OauthGuard;
-use Laika\Auth\Providers\GoogleOauthProvider;
-use Laika\Auth\Providers\FacebookOauthProvider;
 
 class AuthManager
 {
