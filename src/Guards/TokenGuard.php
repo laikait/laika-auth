@@ -148,7 +148,7 @@ class TokenGuard
      * @param ?int $byte
      * @return string
      */
-    private function generateToken(?int $byte): string
+    private function generateToken(?int $byte = null): string
     {
         $byte = $byte ?: 24;
         $token = bin2hex(random_bytes($byte));
