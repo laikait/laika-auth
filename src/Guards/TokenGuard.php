@@ -15,6 +15,7 @@ namespace Laika\Auth\Guards;
 use Laika\Model\Model;
 use Laika\Service\Visitor;
 use Laika\Auth\Model\AuthModel;
+use Laika\Auth\Schema\AuthSchema;
 use Laika\Auth\Exceptions\AuthException;
 
 class TokenGuard
@@ -28,11 +29,31 @@ class TokenGuard
     /** @var AuthModel Model */
     protected AuthModel $model;
 
-    public function __construct(string $provider, string $guardName)
+    /**
+     * @param array{name:string, provider:class-string<Model>, connection?:?string, install?:bool} $config
+     * @throws AuthException
+     */
+    public function __construct(array $config)
     {
-        $this->guardName = strtolower($guardName);
+        $name     = (string) ($config['name'] ?? '');
+        $provider = $config['provider'] ?? null;
+
+        // Check Provider
+        if (!is_string($provider) || $provider === '') {
+            throw new AuthException("Token guard [provider] key should not be empty in [{$name}]");
+        }
+
+        // is_subclass_of() takes the class name itself: ::class on a string is a TypeError
+        if (!is_subclass_of($provider, Model::class)) {
+            throw new AuthException("Token guard provider class should be sub class of " . Model::class);
+        }
+
+        // Install Schema if Required. After validation, so a misconfigured guard creates nothing
+        if ($config['install'] ?? false) (new AuthSchema($config['connection'] ?? null))->up();
+
+        $this->guardName = strtolower($name);
         $this->provider = new $provider();
-        $this->model = new AuthModel();
+        $this->model = new AuthModel($config['connection'] ?? null);
     }
 
     /**
