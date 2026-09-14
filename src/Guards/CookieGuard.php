@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace Laika\Auth\Guards;
 
 use Laika\Service\Cookie;
+use Laika\Auth\Exceptions\AuthException;
 
 class CookieGuard
 {
@@ -25,11 +26,28 @@ class CookieGuard
     /** @var string Cookie Name */
     protected string $cookieName;
 
-    public function __construct(?string $provider, string $guardName = 'web')
+    /**
+     * @param array{name:string, provider?:?string} $config
+     * @throws AuthException
+     */
+    public function __construct(array $config)
     {
+        $name     = (string) ($config['name'] ?? '');
+        $provider = $config['provider'] ?? null;
+
+        // Check Name
+        if ($name === '') {
+            throw new AuthException('Cookie guard [name] key should not be empty');
+        }
+
+        // Check Provider. Optional, But When Given it Must be a Label
+        if ($provider !== null && (!is_string($provider) || $provider === '')) {
+            throw new AuthException("Cookie guard [provider] key should be a non-empty string in [{$name}]");
+        }
+
         $this->provider = $provider;
-        $this->guardName = $guardName;
-        $this->cookieName = "laika_remember_{$guardName}";
+        $this->guardName = $name;
+        $this->cookieName = "laika_remember_{$name}";
     }
 
     /**

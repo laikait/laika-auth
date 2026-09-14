@@ -12,7 +12,9 @@ declare(strict_types=1);
 
 namespace Laika\Auth\Guards;
 
+use Laika\Session\Scope;
 use Laika\Session\Session;
+use Laika\Auth\Exceptions\AuthException;
 
 class SessionGuard
 {
@@ -21,15 +23,32 @@ class SessionGuard
 
     /** @var string Guard */
     protected string $guardName;
-    
+
     /** @var string Session Key */
     protected string $sessionKey;
 
-    public function __construct(?string $provider, string $guardName = 'web')
+    /**
+     * @param array{name:string, provider?:?string} $config
+     * @throws AuthException
+     */
+    public function __construct(array $config)
     {
+        $name     = (string) ($config['name'] ?? '');
+        $provider = $config['provider'] ?? null;
+
+        // Check Name
+        if ($name === '') {
+            throw new AuthException('Session guard [name] key should not be empty');
+        }
+
+        // Check Provider. Optional, But When Given it Names The Session Scope
+        if ($provider !== null && (!is_string($provider) || $provider === '')) {
+            throw new AuthException("Session guard [provider] key should be a non-empty string in [{$name}]");
+        }
+
         $this->provider = $provider;
-        $this->guardName = $guardName;
-        $this->sessionKey = "laika_auth_{$guardName}";
+        $this->guardName = $name;
+        $this->sessionKey = "laika_auth_{$name}";
     }
 
     /**
@@ -39,7 +58,7 @@ class SessionGuard
      */
     public function login(array $user): void
     {
-        Session::set($this->sessionKey, $user, $this->provider);
+        $this->scope()->set($this->sessionKey, $user);
     }
 
     /**
@@ -48,7 +67,7 @@ class SessionGuard
      */
     public function user(): ?array
     {
-        return Session::get($this->sessionKey, null, $this->provider);
+        return $this->scope()->get($this->sessionKey);
     }
 
     /**
@@ -57,6 +76,17 @@ class SessionGuard
      */
     public function logout(): void
     {
-        Session::pop($this->sessionKey, $this->provider);
+        $this->scope()->pop($this->sessionKey);
+    }
+
+    /**
+     * Session Scope For This Provider
+     * The Same Slot v5's $for Parameter Wrote, So Existing Logins Survive. A
+     * null Provider Used to be a TypeError Under strict_types
+     * @return Scope
+     */
+    protected function scope(): Scope
+    {
+        return Session::scope($this->provider ?? 'APP');
     }
 }

@@ -40,11 +40,12 @@ class AuthManager
 
         $conf = $this->config[$name]
             ?? throw new \InvalidArgumentException("Guard [$name] not configured.");
+        $conf['name'] = $name;
 
         $guard = match ($conf['driver']) {
-            'session'   =>  new SessionGuard($conf['provider'] ?? null, $name),
-            'cookie'    =>  new CookieGuard($conf['provider'] ?? null, $name),
-            'token'     =>  new TokenGuard($conf['provider'], $name),
+            'session'   =>  new SessionGuard($conf),
+            'cookie'    =>  new CookieGuard($conf),
+            'token'     =>  new TokenGuard($conf),
             default     =>  throw new \InvalidArgumentException("Unknown auth driver [{$conf['driver']}]."),
         };
 

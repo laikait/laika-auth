@@ -18,6 +18,9 @@
         "php": ">=8.1",
         "ext-curl": "*"
     },
+    "suggest": {
+        "laikait/laika-session": "Required by session provider"
+    },
     "require-dev": {
         "squizlabs/php_codesniffer": "^4.0.2",
         "phpcompatibility/php-compatibility": "dev-develop",
@@ -38,20 +41,5 @@
         "lint": "phpcs --standard=phpcs.xml --report=summary"
     },
     "minimum-stability": "stable",
-    "prefer-stable": true,
-    "extra": {
-        "laika": {
-            "resources": {
-                "models": {
-                    "path": "src/Model",
-                    "namespace": "Laika\\Auth\\Model"
-                },
-                "schemas": {
-                    "path": "src/Schema",
-                    "namespace": "Laika\\Auth\\Schema",
-                    "contract": "Laika\\Model\\Contract\\SchemaAbstract"
-                }
-            }
-        }
-    }
+    "prefer-stable": true
 }
