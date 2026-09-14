@@ -16,8 +16,10 @@
     ],
     "require": {
         "php": ">=8.1",
-        "ext-curl": "*",
-        "laikait/laika-session": "^6.0"
+        "ext-curl": "*"
+    },
+    "suggest": {
+        "laikait/laika-session": "Required by session provider"
     },
     "require-dev": {
         "squizlabs/php_codesniffer": "^4.0.2",
