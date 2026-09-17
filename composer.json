@@ -1,9 +1,9 @@
 {
     "name": "laikait/laika-auth",
-    "description": "Multi-guard authentication package for the Laika PHP Framework with OAuth support",
+    "description": "Multi-guard (session, cookie, token) authentication package for the Laika PHP Framework",
     "type": "library",
     "license": "MIT",
-    "keywords": ["laika", "auth", "authentication", "oauth", "php"],
+    "keywords": ["laika", "auth", "authentication", "token", "php"],
     "authors": [
         {
             "name": "Laika IT",
@@ -15,8 +15,7 @@
         }
     ],
     "require": {
-        "php": ">=8.1",
-        "ext-curl": "*"
+        "php": ">=8.1"
     },
     "suggest": {
         "laikait/laika-session": "Required by session provider"
