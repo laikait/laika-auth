@@ -67,6 +67,9 @@ class TokenGuard
     {
         $token = $this->generateToken();
         $hashed = hash('sha256', $token);
+        // Hashed like the token. The plain value used to be stored and never
+        // returned, so no client could ever present it.
+        $refresh = bin2hex(random_bytes(32));
         $row = [
             'user_id' => $userId,
             'guard' => $this->guardName,
@@ -74,7 +77,7 @@ class TokenGuard
             'ip' => Visitor::ip(),
             'user_agent' => Visitor::userAgent(),
             'token' => $hashed,
-            'refresh_token' => bin2hex(random_bytes(64)),
+            'refresh_token' => hash('sha256', $refresh),
             'expires_at' => $ttl ? date('Y-m-d H:i:s', time() + $ttl) : null,
         ];
 
@@ -85,7 +88,43 @@ class TokenGuard
         } catch (\Throwable $th) {
             throw $th;
         }
-        return ['token' => $token, 'hashed' => $hashed];
+        return ['token' => $token, 'hashed' => $hashed, 'refresh_token' => $refresh];
+    }
+
+    /**
+     * Exchange a Refresh Token For a New Token Pair
+     *
+     * The old token is revoked, so each refresh token works once. An expired
+     * token can still be refreshed; a revoked one can't.
+     * @param string $refreshToken Plain refresh token returned by issueToken()
+     * @param ?int $ttl Lifetime of the new token in seconds. Null never expires, as in issueToken()
+     * @return ?array Same shape as issueToken(), or null
+     * @throws AuthException
+     */
+    public function refreshToken(string $refreshToken, ?int $ttl = null): ?array
+    {
+        if ($refreshToken === '') return null;
+
+        $row = $this->model
+                    ->select(['id', 'user_id'])
+                    ->where(['refresh_token' => hash('sha256', $refreshToken), 'guard' => $this->guardName])
+                    ->isNull('revoked_at')
+                    ->first();
+
+        // Check Has Row & User
+        if (empty($row)) return null;
+        if (empty($this->provider->find($row['user_id']))) return null;
+
+        // Revoke only while still live: when two requests race with the same
+        // refresh token, exactly one update matches and only that one issues.
+        $revoked = $this->model
+                        ->where(['id' => $row['id']])
+                        ->isNull('revoked_at')
+                        ->update(['revoked_at' => date('Y-m-d H:i:s')]);
+
+        if ((int) $revoked === 0) return null;
+
+        return $this->issueToken((int) $row['user_id'], $ttl);
     }
 
 
