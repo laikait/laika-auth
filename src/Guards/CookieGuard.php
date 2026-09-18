@@ -63,11 +63,17 @@ class CookieGuard
 
     /**
      * Get Cookie Token
+     *
+     * Read raw rather than through Cookie::get(), which JSON-decodes: a token
+     * such as "123" or "1e5" came back as a number, and a client-set "[]" as
+     * an array, both a TypeError against this return type.
      * @return ?string
      */
     public function token(): ?string
     {
-        return Cookie::get($this->cookieName, null);
+        $raw = $_COOKIE[$this->cookieName] ?? null;
+
+        return is_string($raw) && $raw !== '' ? rawurldecode($raw) : null;
     }
 
     /**
